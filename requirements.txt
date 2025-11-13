@@ -1,0 +1,77 @@
+# FastAPI and Server
+fastapi
+uvicorn[standard]
+gunicorn
+python-multipart
+
+# Database
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Authentication & Security
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+python-dotenv
+
+# Pydantic & Validation
+pydantic
+pydantic-settings
+email-validator
+
+# HTTP Client
+httpx
+requests
+
+# Image Processing
+cloudinary
+pillow
+
+# Payment Gateway
+paystack
+
+# WhatsApp Integration
+twilio
+whatsapp-api-client-python
+
+# Date & Time
+python-dateutil
+
+# PDF Generation (for invoices)
+reportlab
+weasyprint
+
+# Email
+aiosmtplib
+aiofiles
+email-validator
+jinja2
+
+# Utilities
+python-slugify
+phonenumbers
+
+# CORS
+fastapi-cors
+
+# Rate Limiting
+slowapi
+
+# Logging & Monitoring
+python-json-logger
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+
+# Code Quality
+black
+flake8
+mypy
+
+# Background Tasks (Optional)
+celery
+redis
