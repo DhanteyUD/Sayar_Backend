@@ -33,11 +33,12 @@ class Merchant(Base):
     onboarding_completed = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Foreign Keys
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     # Relationships
-    owner = relationship("User", back_populates="merchants")
+    user = relationship("User", back_populates="merchant")
     products = relationship("Product", back_populates="merchant")
     orders = relationship("Order", back_populates="merchant")
