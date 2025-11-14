@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from app.core.database import get_db
 from app.models.user import User, UserRole
@@ -106,8 +106,10 @@ async def refresh_token_endpoint(refresh_token: str, db: Session = Depends(get_d
         user_id = payload.get("sub")
 
         user = db.query(User).filter(
-            User.id == int(user_id),
-            User.is_active.is_(True)
+            and_(
+                User.id == int(user_id),
+                User.is_active == True
+            )
         ).first()
 
         if not user:
