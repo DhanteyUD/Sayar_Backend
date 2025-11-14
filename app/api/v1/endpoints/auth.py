@@ -1,6 +1,3 @@
-"""
-Authentication API Endpoints
-"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -13,9 +10,9 @@ from app.core.security import (
     get_password_hash,
     create_access_token,
     create_refresh_token,
-    decode_token
+    decode_token,
+    get_current_user
 )
-from app.core.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -87,8 +84,8 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
         )
 
     # Create tokens
-    access_token = create_access_token(data={"sub": user.id})
-    refresh_token = create_refresh_token(data={"sub": user.id})
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
     return {
         "access_token": access_token,
@@ -98,7 +95,7 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=Token)
-async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+async def refresh_token_endpoint(refresh_token: str, db: Session = Depends(get_db)):
     """
     Refresh access token using refresh token
     """
@@ -113,7 +110,7 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
 
         user_id = payload.get("sub")
 
-        user = db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).filter(User.id == int(user_id)).first()
 
         if not user or not user.is_active:
             raise HTTPException(
@@ -122,8 +119,8 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
             )
 
         # Create new tokens
-        new_access_token = create_access_token(data={"sub": user.id})
-        new_refresh_token = create_refresh_token(data={"sub": user.id})
+        new_access_token = create_access_token(data={"sub": str(user.id)})
+        new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
         return {
             "access_token": new_access_token,
