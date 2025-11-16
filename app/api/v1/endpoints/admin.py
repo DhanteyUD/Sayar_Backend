@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
-from typing import List, Optional
-from datetime import datetime, timedelta
+from typing import Optional
+from datetime import datetime, timedelta, UTC
 
 from ....core.database import get_db
 from ....core.security import get_current_user
@@ -23,21 +23,21 @@ async def get_dashboard_stats(
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Total counts
     total_merchants = db.query(func.count(Merchant.id)).scalar()
     total_products = db.query(func.count(Product.id)).scalar()
     total_orders = db.query(func.count(Order.id)).scalar()
 
-    # Revenue calculations
-    total_revenue = db.query(func.coalesce(func.sum(Payment.amount), 0)).filter(
-        Payment.status == "success"
-    ).scalar()
+    total_revenue = (
+        db.query(func.coalesce(func.sum(Payment.amount), 0))
+        .filter_by(status="success")
+        .scalar()
+    )
 
     # Recent orders
     recent_orders = db.query(Order).order_by(desc(Order.created_at)).limit(10).all()
 
     # Merchant growth (last 30 days)
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
     new_merchants = db.query(func.count(Merchant.id)).filter(
         Merchant.created_at >= thirty_days_ago
     ).scalar()
@@ -79,7 +79,7 @@ async def get_all_orders(
 
     query = db.query(Order)
     if status:
-        query = query.filter(Order.status == status)
+        query = query.filter_by(status=status)
 
     orders = query.offset(skip).limit(limit).all()
     return orders

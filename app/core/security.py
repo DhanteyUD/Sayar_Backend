@@ -59,10 +59,11 @@ async def get_current_user(
 
     token = credentials.credentials
     user_id = verify_token(token)
+
     if user_id is None:
         raise credentials_exception
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    user = db.query(User).filter(User.id == int(user_id)).first()  # type: ignore[arg-type]
     if user is None:
         raise credentials_exception
 
