@@ -1,8 +1,6 @@
-"""
-Authentication API Endpoints
-"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 
 from app.core.database import get_db
 from app.models.user import User, UserRole
@@ -13,21 +11,20 @@ from app.core.security import (
     get_password_hash,
     create_access_token,
     create_refresh_token,
-    decode_token
+    decode_token,
+    get_current_user
 )
-from app.core.dependencies import get_current_user
 
 router = APIRouter()
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """
-    Register a new merchant user
-    """
-    # Check if user exists
     existing_user = db.query(User).filter(
-        (User.email == user_data.email) | (User.phone_number == user_data.phone_number)
+        or_(
+            User.email == user_data.email,
+            User.phone_number == user_data.phone_number
+        )
     ).first()
 
     if existing_user:
@@ -65,13 +62,11 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 async def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    """
-    Login with email/phone and password
-    """
-    # Find user by email or phone
     user = db.query(User).filter(
-        (User.email == credentials.email_or_phone) |
-        (User.phone_number == credentials.email_or_phone)
+        or_(
+            User.email == credentials.email_or_phone,
+            User.phone_number == credentials.email_or_phone
+        )
     ).first()
 
     if not user or not verify_password(credentials.password, user.hashed_password):
@@ -87,8 +82,8 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
         )
 
     # Create tokens
-    access_token = create_access_token(data={"sub": user.id})
-    refresh_token = create_refresh_token(data={"sub": user.id})
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
     return {
         "access_token": access_token,
@@ -98,10 +93,7 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=Token)
-async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
-    """
-    Refresh access token using refresh token
-    """
+async def refresh_token_endpoint(refresh_token: str, db: Session = Depends(get_db)):
     try:
         payload = decode_token(refresh_token)
 
@@ -113,17 +105,22 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
 
         user_id = payload.get("sub")
 
-        user = db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).filter(
+            and_(
+                User.id == int(user_id),
+                User.is_active == True
+            )
+        ).first()
 
-        if not user or not user.is_active:
+        if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found or inactive"
             )
 
         # Create new tokens
-        new_access_token = create_access_token(data={"sub": user.id})
-        new_refresh_token = create_refresh_token(data={"sub": user.id})
+        new_access_token = create_access_token(data={"sub": str(user.id)})
+        new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
         return {
             "access_token": new_access_token,
@@ -140,15 +137,11 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """
-    Get current authenticated user information
-    """
     return current_user
 
 
 @router.post("/logout")
 async def logout(current_user: User = Depends(get_current_user)):
-    """
-    Logout user (client should discard tokens)
-    """
+    print(f"User {current_user.email} logged out")
+
     return {"message": "Successfully logged out"}

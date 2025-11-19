@@ -1,7 +1,14 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+import enum
 from ..core.database import Base
+
+
+class UserRole(enum.Enum):
+    MERCHANT = "merchant"
+    ADMIN = "admin"
+    CUSTOMER = "customer"
 
 
 class User(Base):
@@ -11,11 +18,12 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=False)
-    phone_number = Column(String)
+    phone_number = Column(String, unique=True, index=True, nullable=False)
     is_active = Column(Boolean, default=True)
-    is_superuser = Column(Boolean, default=False)
+    is_verified = Column(Boolean, default=False)
+    role = Column(Enum(UserRole), default=UserRole.MERCHANT)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    merchants = relationship("Merchant", back_populates="owner")
+    merchant = relationship("Merchant", back_populates="user", uselist=False)
