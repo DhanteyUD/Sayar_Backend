@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Sayar API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+    APP_ENV: str = "development"
+    DEBUG: bool = True
 
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
@@ -21,7 +23,7 @@ class Settings(BaseSettings):
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8000"]
 
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = None
