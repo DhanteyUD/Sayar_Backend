@@ -54,7 +54,7 @@ class Merchant(Base):
     whatsapp_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     business_hours: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    timezone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    merchant_timezone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     currency: Mapped[str] = mapped_column(String(3), default="NGN", nullable=False)
     locale: Mapped[Optional[str]] = mapped_column(String(10), default="en-NG", nullable=True)

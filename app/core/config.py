@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Sayar API"
@@ -39,12 +40,20 @@ class Settings(BaseSettings):
 
     PAYSTACK_SECRET_KEY: Optional[str] = None
     PAYSTACK_PUBLIC_KEY: Optional[str] = None
+    PAYSTACK_CALLBACK_URL: Optional[str] = None
+
+    CLOUDINARY_CLOUD_NAME: Optional[str] = None
+    CLOUDINARY_API_KEY: Optional[str] = None
+    CLOUDINARY_API_SECRET: Optional[str] = None
 
     FIRST_ADMIN_EMAIL: str = "admin@sayar.com"
     FIRST_ADMIN_PASSWORD: str
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="ignore"
+    )
+
 
 settings = Settings()

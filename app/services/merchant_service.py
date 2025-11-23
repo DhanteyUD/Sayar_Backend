@@ -69,7 +69,7 @@ class MerchantService:
             category=merchant_data.category,
             industry=merchant_data.industry,
             currency=merchant_data.currency or "NGN",
-            timezone=merchant_data.timezone or "Africa/Lagos",
+            merchant_timezone=merchant_data.timezone or "Africa/Lagos",
             locale=merchant_data.locale or "en-NG",
             is_active=True,
             is_verified=False,
