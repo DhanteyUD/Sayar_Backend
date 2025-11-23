@@ -79,7 +79,7 @@ class AuthService:
         return user, merchant, merchant_user
 
     @staticmethod
-    def authenticate_user(db: Session, login_data: LoginRequest) -> Optional[User]:
+    def authenticate_user(db: Session, login_data: LoginRequest) -> type[User] | None:
         user = db.query(User).filter(User.email == login_data.email).first()
 
         if not user:
