@@ -34,7 +34,7 @@ class User(Base):
 
     created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
     updated_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc), onUpdate=datetime.now(timezone.utc))
-    last_update_at = Column(DateTime, nullable=False)
+    last_login_at = Column(DateTime, nullable=False)
 
     email_verified_at = Column(DateTime, nullable=True)
     verification_token = Column(String(255), nullable=True)
