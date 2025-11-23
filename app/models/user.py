@@ -17,31 +17,32 @@ class UserRole(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
-    first_name = Column(String(100), nullable=False)
-    last_name = Column(String(100), nullable=False)
-    phone = Column(String(20), nullable=False, index=True)
+    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    phone: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
 
     hashed_password = Column(String(255), nullable=False)
 
-    avatar_url = Column(Text, nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    is_active = Column(Boolean, nullable=False, default=True)
-    is_verified = Column(Boolean, nullable=False, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.CUSTOMER)
+    role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole), nullable=False, default=UserRole.CUSTOMER)
 
-    created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc), onUpdate=datetime.now(timezone.utc))
-    last_login_at = Column(DateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now(timezone.utc),
+                                                 onupdate=datetime.now(timezone.utc))
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
-    email_verified_at = Column(DateTime, nullable=True)
+    email_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     verification_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     reset_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    reset_token_expires_at = Column(DateTime, nullable=True)
+    reset_token_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Relationships (to be defined in other models)
     # merchants = relationship("Merchant", back_populates="user")
