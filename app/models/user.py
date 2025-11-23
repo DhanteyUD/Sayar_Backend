@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column
+from typing import Optional
 from datetime import datetime, timezone
 import uuid
 import enum
@@ -18,7 +19,7 @@ class User(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    email = Column(String(255), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
     phone = Column(String(20), nullable=False, index=True)
@@ -37,9 +38,9 @@ class User(Base):
     last_login_at = Column(DateTime, nullable=False)
 
     email_verified_at = Column(DateTime, nullable=True)
-    verification_token = Column(String(255), nullable=True)
+    verification_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-    reset_token = Column(String(255), nullable=True)
+    reset_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     reset_token_expires_at = Column(DateTime, nullable=True)
 
     # Relationships (to be defined in other models)

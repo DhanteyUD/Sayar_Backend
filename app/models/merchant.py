@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime, timezone
 import uuid
 import enum
@@ -24,7 +24,7 @@ class Merchant(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    business_name = Column(String(255), nullable=False, index=True)
+    business_name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     business_email = Column(String(255), nullable=True)
     business_phone = Column(String(20), nullable=True)
     business_description = Column(Text, nullable=True)
