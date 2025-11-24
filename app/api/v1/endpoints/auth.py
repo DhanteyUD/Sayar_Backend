@@ -90,6 +90,9 @@ def login(
 def get_current_user_info(
         current_user: User = Depends(get_current_user)
 ):
+    """
+    Get current user information
+    """
     return UserResponse.model_validate(current_user)
 
 
@@ -98,6 +101,9 @@ def verify_email(
         token: str,
         db: Session = Depends(get_db)
 ):
+    """
+    Verify user email with verification token
+    """
     success = AuthService.verify_email(db, token)
 
     if not success:
@@ -133,6 +139,10 @@ def confirm_password_reset(
         reset_data: PasswordResetConfirm,
         db: Session = Depends(get_db)
 ):
+
+    """
+    Confirm password reset with token and new password
+    """
     success = AuthService.reset_password(
         db,
         reset_data.token,
@@ -154,6 +164,12 @@ def confirm_password_reset(
 def logout(
         _current_user: User = Depends(get_current_user)
 ):
+    """
+    Logout (client should delete tokens)
+
+    Note: JWT tokens are stateless, so actual logout happens client-side
+    For additional security, implement token blacklisting
+    """
     return {
         "message": "Logged out successfully"
     }
