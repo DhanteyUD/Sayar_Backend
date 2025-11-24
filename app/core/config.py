@@ -1,10 +1,13 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Sayar API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+    APP_ENV: str = "development"
+    DEBUG: bool = True
 
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
@@ -21,7 +24,7 @@ class Settings(BaseSettings):
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8000"]
 
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = None
@@ -37,12 +40,20 @@ class Settings(BaseSettings):
 
     PAYSTACK_SECRET_KEY: Optional[str] = None
     PAYSTACK_PUBLIC_KEY: Optional[str] = None
+    PAYSTACK_CALLBACK_URL: Optional[str] = None
+
+    CLOUDINARY_CLOUD_NAME: Optional[str] = None
+    CLOUDINARY_API_KEY: Optional[str] = None
+    CLOUDINARY_API_SECRET: Optional[str] = None
 
     FIRST_ADMIN_EMAIL: str = "admin@sayar.com"
     FIRST_ADMIN_PASSWORD: str
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="ignore"
+    )
+
 
 settings = Settings()

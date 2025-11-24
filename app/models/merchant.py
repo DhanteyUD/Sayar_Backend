@@ -1,7 +1,8 @@
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime, timezone
+from typing import Optional
 import uuid
 import enum
 from app.core.database import Base
@@ -22,49 +23,49 @@ class MerchantRole(str, enum.Enum):
 class Merchant(Base):
     __tablename__ = "merchants"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    business_name = Column(String(255), nullable=False, index=True)
-    business_email = Column(String(255), nullable=True)
-    business_phone = Column(String(20), nullable=True)
-    business_description = Column(Text, nullable=True)
-    business_logo_url = Column(Text, nullable=True)
+    business_name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
+    business_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    business_phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    business_description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    business_logo_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    address_line1 = Column(String(255), nullable=True)
-    address_line2 = Column(String(255), nullable=True)
-    city = Column(String(100), nullable=True)
-    state = Column(String(100), nullable=True)
-    country = Column(String(100), nullable=True)
-    postal_code = Column(String(20), nullable=True)
+    address_line1: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    address_line2: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    state: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    country: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    postal_code: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
 
-    category = Column(String(100), nullable=True)
-    industry = Column(String(100), nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    industry: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
-    tax_id = Column(String(100), nullable=True)
+    tax_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
-    paystack_subaccount_code = Column(String(255), nullable=True, Unique=True)
-    paystack_integration_status = Column(Boolean, default=False)
-    settlement_bank = Column(String(255), nullable=True)
-    account_number = Column(String(255), nullable=True)
+    paystack_subaccount_code: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, unique=True)
+    paystack_integration_status: Mapped[bool] = mapped_column(Boolean, default=False)
+    settlement_bank: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    account_number: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-    whatsapp_number = Column(String(20), nullable=True)
-    whatsapp_business_id = Column(String(255), nullable=True)
-    whatsapp_webhook_url = Column(Text, nullable=True)
-    whatsapp_verified = Column(Boolean, default=False)
+    whatsapp_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    whatsapp_business_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    whatsapp_webhook_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    whatsapp_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    business_hours = Column(Text, nullable=True)
-    timezone = Column(String(50), nullable=True)
+    business_hours: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    merchant_timezone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
-    currency = Column(String(3), default="NGN", nullable=False)
-    locale = Column(String(10), default="en-NG", nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), default="NGN", nullable=False)
+    locale: Mapped[Optional[str]] = mapped_column(String(10), default="en-NG", nullable=True)
 
-    is_active = Column(Boolean, default=True, nullable=False)
-    is_verified = Column(Boolean, default=False, nullable=False)
-    kyc_status = Column(String(50), default="pending", nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    kyc_status: Mapped[Optional[str]] = mapped_column(String(50), default="pending", nullable=True)
 
-    subscription_plan = Column(String(50), default="free", nullable=True)
-    monthly_order_limit = Column(Integer, nullable=True)
-    current_month_orders = Column(Integer, default=0)
+    subscription_plan: Mapped[Optional[str]] = mapped_column(String(50), default="free", nullable=True)
+    monthly_order_limit: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    current_month_orders: Mapped[int] = mapped_column(Integer, default=0)
 
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc),
@@ -81,18 +82,20 @@ class Merchant(Base):
 class MerchantUser(Base):
     __tablename__ = "merchant_users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    merchant_id = Column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    merchant_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False,
+                                              index=True)
+    user_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
 
-    role = Column(SQLEnum(MerchantRole), nullable=False, default=MerchantRole.STAFF)
+    role: Mapped[MerchantRole] = mapped_column(SQLEnum(MerchantRole), nullable=False, default=MerchantRole.STAFF)
 
-    status = Column(SQLEnum(MembershipStatus), nullable=False, default=MembershipStatus.ACTIVE)
+    status: Mapped[MembershipStatus] = mapped_column(SQLEnum(MembershipStatus), nullable=False,
+                                                     default=MembershipStatus.ACTIVE)
 
-    invited_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    invitation_token = Column(String(255), nullable=True)
-    invitation_expires_at = Column(DateTime, nullable=True)
+    invited_by: Mapped[Optional[UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    invitation_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    invitation_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc),

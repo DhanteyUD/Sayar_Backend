@@ -18,7 +18,7 @@ class MerchantBase(BaseModel):
 
 class MerchantCreate(MerchantBase):
     currency: Optional[str] = "NGN"
-    timezone: Optional[str] = "Africa/Lagos"
+    merchant_timezone: Optional[str] = "Africa/Lagos"
     locale: Optional[str] = "en-NG"
 
 
@@ -46,7 +46,7 @@ class MerchantUpdate(BaseModel):
     account_number: Optional[str] = None
 
     business_hours: Optional[str] = None
-    timezone: Optional[str] = None
+    merchant_timezone: Optional[str] = None
 
     currency: Optional[str] = None
     locale: Optional[str] = None
@@ -88,7 +88,7 @@ class MerchantResponse(BaseModel):
     current_month_orders: int
 
     currency: str
-    timezone: Optional[str] = None
+    merchant_timezone: Optional[str] = None
     locale: Optional[str] = None
 
     created_at: datetime
