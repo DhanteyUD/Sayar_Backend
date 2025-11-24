@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
@@ -28,12 +28,11 @@ class MerchantSignupRequest(BaseModel):
             raise ValueError('Password must contain at least one digit')
         return value
 
-    @field_validator("confirm_password")
-    @classmethod
-    def password_match(cls, value, values):
-        if "password" in values and value != values["password"]:
-            raise ValueError("Password do not match")
-        return value
+    @model_validator(mode='after')
+    def password_match(self):
+        if self.password != self.confirm_password:
+            raise ValueError('Passwords do not match')
+        return self
 
     @field_validator("phone")
     @classmethod
