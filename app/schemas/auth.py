@@ -14,6 +14,8 @@ class MerchantSignupRequest(BaseModel):
     password: str = Field(..., min_length=8, max_length=100)
     confirm_password: str = Field(..., min_length=8, max_length=100)
     referral_code: Optional[str] = Field(None, max_length=50)
+    agreed_to_terms: bool = Field(..., description="Must be True to agree to terms and conditions")
+    send_marketing_emails: bool = Field(False, description="Optional marketing emails preference")
 
     @field_validator("password")
     @classmethod
@@ -42,6 +44,13 @@ class MerchantSignupRequest(BaseModel):
             raise ValueError('Invalid phone number format')
         return phone
 
+    @field_validator("agreed_to_terms")
+    @classmethod
+    def validate_terms_agreement(cls, value):
+        if not value:
+            raise ValueError("You must agree to the terms and conditions")
+        return value
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -52,7 +61,9 @@ class MerchantSignupRequest(BaseModel):
                 "business_name": "Simi Enterprises",
                 "password": "SecurePass123",
                 "confirm_password": "SecurePass123",
-                "referral_code": "SAYAR123"
+                "referral_code": "SAYAR123",
+                "agreed_to_terms": True,
+                "send_marketing_emails": False
             }
         }
 

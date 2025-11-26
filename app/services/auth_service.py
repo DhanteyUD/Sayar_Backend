@@ -38,6 +38,8 @@ class AuthService:
             is_active=True,
             is_verified=False,
             verification_token=str(uuid4()),
+            agreed_to_terms=signup_data.agreed_to_terms,
+            send_marketing_emails=signup_data.send_marketing_emails,
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc)
         )
