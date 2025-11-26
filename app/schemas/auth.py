@@ -119,9 +119,8 @@ class PasswordResetConfirm(BaseModel):
             raise ValueError('Password must contain at least one digit')
         return value
 
-    @field_validator('confirm_password')
-    @classmethod
-    def passwords_match(cls, value, values):
-        if 'new_password' in values and value != values['new_password']:
+    @model_validator(mode='after')
+    def password_match(self):
+        if self.password != self.confirm_password:
             raise ValueError('Passwords do not match')
-        return value
+        return self
