@@ -4,7 +4,10 @@ from jose import jwt
 from passlib.context import CryptContext
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256", "django_argon2", "django_bcrypt"],
+    deprecated="auto"
+)
 
 
 def create_access_token(

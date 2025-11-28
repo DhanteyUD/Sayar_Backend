@@ -44,6 +44,9 @@ class User(Base):
     reset_token: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     reset_token_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
+    agreed_to_terms: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    send_marketing_emails: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
     # Relationships (to be defined in other models)
     # merchants = relationship("Merchant", back_populates="user")
     # customer = relationship("Customer", back_populates="user", uselist=False)

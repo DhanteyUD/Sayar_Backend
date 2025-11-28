@@ -15,6 +15,8 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
     role: UserRole = UserRole.MERCHANT
+    agreed_to_terms: bool
+    send_marketing_emails: bool = False
 
 
 class UserUpdate(BaseModel):
@@ -22,6 +24,7 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
+    send_marketing_emails: Optional[bool] = None
 
 
 class UserInDB(UserBase):
@@ -34,6 +37,8 @@ class UserInDB(UserBase):
     updated_at: datetime
     last_login_at: Optional[datetime] = None
     email_verified_at: Optional[datetime] = None
+    agreed_to_terms: bool
+    send_marketing_emails: bool
 
     class Config:
         from_attributes = True
@@ -50,6 +55,8 @@ class UserResponse(BaseModel):
     is_verified: bool
     avatar_url: Optional[str] = None
     created_at: datetime
+    agreed_to_terms: bool
+    send_marketing_emails: bool
 
     class Config:
         from_attributes = True
@@ -64,6 +71,8 @@ class UserResponse(BaseModel):
                 "is_active": True,
                 "is_verified": True,
                 "avatar_url": None,
+                "agreed_to_terms": True,
+                "send_marketing_emails": False,
                 "created_at": "2024-01-01T00:00:00"
             }
         }
