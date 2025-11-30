@@ -97,7 +97,7 @@ class WhatsAppConnectionRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "app_id": "sayar-merchant-12345",
-                "app_secret": "",
+                "app_secret": "EAAwG...YourSecretToken...L4xZ...",
                 "business_account_id": "123456789012345",
                 "phone_number_id": "987654321098765",
                 "whatsapp_phone_number": "+2348012345678",
