@@ -34,9 +34,12 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: Optional[str] = None
     EMAILS_FROM_NAME: Optional[str] = None
 
-    TWILIO_ACCOUNT_SID: Optional[str] = None
-    TWILIO_AUTH_TOKEN: Optional[str] = None
-    TWILIO_WHATSAPP_NUMBER: Optional[str] = None
+    META_WHATSAPP_APP_ID: Optional[str] = None
+    META_WHATSAPP_APP_SECRET: Optional[str] = None
+    META_WHATSAPP_ACCESS_TOKEN: Optional[str] = None
+    META_WHATSAPP_PHONE_NUMBER_ID: Optional[str] = None
+    META_WHATSAPP_BUSINESS_ACCOUNT_ID: Optional[str] = None
+    META_WHATSAPP_WEBHOOK_VERIFY_TOKEN: Optional[str] = None
 
     PAYSTACK_SECRET_KEY: Optional[str] = None
     PAYSTACK_PUBLIC_KEY: Optional[str] = None
