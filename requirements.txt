@@ -32,9 +32,8 @@ pillow
 # Payment Gateway
 paystack
 
-# WhatsApp Integration
-twilio
-whatsapp-api-client-python
+# WhatsApp Integration (Meta Cloud API)
+# Uses requests library for API calls
 
 # Date & Time
 python-dateutil
