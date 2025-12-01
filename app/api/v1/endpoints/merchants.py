@@ -14,6 +14,48 @@ from app.services.merchant_service import MerchantService
 router = APIRouter()
 
 
+@router.get("/stats", response_model=dict)
+def get_merchant_stats(
+        merchant_id: UUID = Query(..., description="Merchant ID"),
+        current_user: User = Depends(get_current_merchant_user),
+        db: Session = Depends(get_db)
+):
+    """
+    Get statistics for a merchant
+
+    Returns user count, roles distribution, etc.
+    """
+    merchant_user = MerchantService.get_merchant_user_role(db, merchant_id, current_user.id)
+    if not merchant_user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this merchant"
+        )
+
+    merchant_users = MerchantService.get_merchant_users(db, merchant_id)
+
+    roles_count = {
+        "owner": 0,
+        "admin": 0,
+        "staff": 0
+    }
+
+    for _, mu in merchant_users:
+        if mu.role == MerchantRole.OWNER:
+            roles_count["owner"] += 1
+        elif mu.role == MerchantRole.ADMIN:
+            roles_count["admin"] += 1
+        elif mu.role == MerchantRole.STAFF:
+            roles_count["staff"] += 1
+
+    return {
+        "merchant_id": str(merchant_id),
+        "total_users": len(merchant_users),
+        "roles": roles_count,
+        "active_users": sum(1 for _, mu in merchant_users if mu.status.value == "active")
+    }
+
+
 @router.get("/merchant-users", response_model=List[dict])
 def list_merchant_users(
         merchant_id: UUID = Query(..., description="Merchant ID"),
@@ -206,45 +248,3 @@ def list_all_users(
 
     users = query.offset(skip).limit(limit).all()
     return [UserResponse.model_validate(u) for u in users]
-
-
-@router.get("/stats", response_model=dict)
-def get_merchant_stats(
-        merchant_id: UUID = Query(..., description="Merchant ID"),
-        current_user: User = Depends(get_current_merchant_user),
-        db: Session = Depends(get_db)
-):
-    """
-    Get statistics for a merchant
-
-    Returns user count, roles distribution, etc.
-    """
-    merchant_user = MerchantService.get_merchant_user_role(db, merchant_id, current_user.id)
-    if not merchant_user:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this merchant"
-        )
-
-    merchant_users = MerchantService.get_merchant_users(db, merchant_id)
-
-    roles_count = {
-        "owner": 0,
-        "admin": 0,
-        "staff": 0
-    }
-
-    for _, mu in merchant_users:
-        if mu.role == MerchantRole.OWNER:
-            roles_count["owner"] += 1
-        elif mu.role == MerchantRole.ADMIN:
-            roles_count["admin"] += 1
-        elif mu.role == MerchantRole.STAFF:
-            roles_count["staff"] += 1
-
-    return {
-        "merchant_id": str(merchant_id),
-        "total_users": len(merchant_users),
-        "roles": roles_count,
-        "active_users": sum(1 for _, mu in merchant_users if mu.status.value == "active")
-    }
