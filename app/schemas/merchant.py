@@ -40,7 +40,7 @@ class MerchantUpdate(BaseModel):
 
     tax_id: Optional[str] = None
 
-    whatsapp_number: Optional[str] = None
+    whatsapp_phone_number: Optional[str] = None
 
     settlement_bank: Optional[str] = None
     account_number: Optional[str] = None
@@ -76,7 +76,7 @@ class MerchantResponse(BaseModel):
     paystack_integration_status: bool
     paystack_subaccount_code: Optional[str] = None
 
-    whatsapp_number: Optional[str] = None
+    whatsapp_phone_number: Optional[str] = None
     whatsapp_verified: bool
 
     is_active: bool
@@ -114,7 +114,7 @@ class MerchantDetailResponse(MerchantResponse):
 
     business_hours: Optional[str] = None
 
-    whatsapp_business_id: Optional[str] = None
+    whatsapp_business_account_id: Optional[str] = None
     whatsapp_webhook_url: Optional[str] = None
 
     updated_at: datetime
