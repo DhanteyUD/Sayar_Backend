@@ -5,6 +5,16 @@ from app.models.merchant import (
     MerchantRole,
     MembershipStatus
 )
+from app.models.onboarding import (
+    MerchantOnboarding,
+    WhatsAppConfig,
+    CatalogConfig,
+    PaymentConfig,
+    OnboardingStatus,
+    OnboardingStepStatus,
+    BusinessCategory,
+    Currency
+)
 
 __all__ = [
     "User",
@@ -13,4 +23,12 @@ __all__ = [
     "MerchantUser",
     "MerchantRole",
     "MembershipStatus",
+    "MerchantOnboarding",
+    "WhatsAppConfig",
+    "CatalogConfig",
+    "PaymentConfig",
+    "OnboardingStatus",
+    "OnboardingStepStatus",
+    "BusinessCategory",
+    "Currency",
 ]

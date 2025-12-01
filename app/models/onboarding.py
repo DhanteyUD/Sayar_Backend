@@ -120,12 +120,14 @@ class WhatsAppConfig(Base):
                                               index=True)
 
     app_id = Column(String(255), nullable=False)
-    app_secret = Column(String(255), nullable=False)
+    app_secret = Column(Text, nullable=False)
     business_account_id = Column(String(255), nullable=False)
     phone_number_id = Column(String(255), nullable=False)
     whatsapp_phone_number = Column(String(20), nullable=False)
 
     access_token = Column(Text, nullable=False)
+
+    encryption_salt = Column(Text, nullable=False)
 
     webhook_url = Column(Text, nullable=True)
     webhook_verify_token = Column(String(255), nullable=True)
