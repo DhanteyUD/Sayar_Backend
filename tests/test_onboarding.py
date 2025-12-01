@@ -2,240 +2,320 @@
 Test script for Sayar merchant onboarding flow
 """
 import requests
+import json
 
-# API endpoint
-BASE_URL = "http://127.0.0.1:8000"
-API_BASE = f"{BASE_URL}/api/v1"
+BASE_URL = "http://127.0.0.1:8000/api/v1"
+
+access_token = None
+merchant_id = None
 
 
-def test_complete_onboarding_flow():
-    """Test the complete onboarding flow"""
+def print_step(step_num, title):
     print("\n" + "=" * 70)
-    print("SAYAR MERCHANT ONBOARDING TEST")
+    print(f"STEP {step_num}: {title}")
     print("=" * 70)
 
-    # Step 0: Login to get token
-    print("\n📝 Step 0: Login")
-    print("-" * 70)
 
-    login_data = {
-        "email": "john@example.com",
-        "password": "SecurePass123"
+def test_signup_and_login():
+    global access_token, merchant_id
+
+    print_step(0, "MERCHANT SIGNUP & LOGIN")
+
+    signup_data = {
+        "first_name": "Sarah",
+        "last_name": "Johnson",
+        "email": "sarah@bookio.com",
+        "phone": "+2348012345678",
+        "business_name": "Bookio",
+        "password": "BookioPass123",
+        "confirm_password": "BookioPass123",
+        "agree_to_terms": True,
+        "send_marketing_emails": False
     }
 
-    response = requests.post(f"{API_BASE}/auth/login", json=login_data)
+    print("\n📝 Attempting signup...")
+    response = requests.post(f"{BASE_URL}/auth/signup/merchant", json=signup_data)
 
-    if response.status_code != 200:
-        print(f"❌ Login failed: {response.text}")
-        return
+    if response.status_code == 201:
+        print("✅ Signup successful!")
+        result = response.json()
+        access_token = result["tokens"]["access_token"]
+        merchant_id = result["merchant"]["id"]
+        print(f"Merchant ID: {merchant_id}")
+    elif response.status_code == 400:
+        print("ℹ️  User exists, logging in instead...")
+        login_response = requests.post(
+            f"{BASE_URL}/auth/login",
+            json={"email": "sarah@bookio.com", "password": "BookioPass123"}
+        )
 
-    token_data = response.json()
-    access_token = token_data["access_token"]
-    print(f"✅ Login successful!")
-    print(f"🔑 Token: {access_token[:50]}...")
+        if login_response.status_code == 200:
+            print("✅ Login successful!")
+            result = login_response.json()
+            access_token = result["access_token"]
+
+            me_response = requests.get(
+                f"{BASE_URL}/auth/me",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+
+            if me_response.status_code == 200:
+                # For now, we'll need to get merchant_id from database or pass it manually
+                # In production, you'd have an endpoint to list user's merchants
+                merchant_id = input("Enter your merchant ID: ")
+        else:
+            print(f"❌ Login failed: {login_response.text}")
+            return False
+    else:
+        print(f"❌ Signup failed: {response.text}")
+        return False
+
+    print(f"\n🔑 Access Token: {access_token[:50]}...")
+    print(f"🏢 Merchant ID: {merchant_id}")
+    return True
+
+
+def get_onboarding_progress():
+    print_step("?", "GET ONBOARDING PROGRESS")
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(
+        f"{BASE_URL}/onboarding/progress",
+        params={"merchant_id": merchant_id},
+        headers=headers
+    )
+
+    if response.status_code == 200:
+        progress = response.json()
+        print("\n✅ Current Progress:")
+        print(f"   Status: {progress['status']}")
+        print(f"   Current Step: {progress['current_step']}")
+        print(f"   Completed: {progress['steps_completed']}/{progress['total_steps']}")
+        print(f"   Percentage: {progress['completion_percentage']}%")
+        print(f"\n   Steps:")
+        print(f"   1. Business Details: {progress['business_details']['status']}")
+        print(f"   2. WhatsApp Connection: {progress['whatsapp_connection']['status']}")
+        print(f"   3. Catalog ID: {progress['catalog_id']['status']}")
+        print(f"   4. Payment Details: {progress['payment_details']['status']}")
+        return progress
+    else:
+        print(f"❌ Failed: {response.text}")
+        return None
+
+
+def complete_step1_business_details():
+    print_step(1, "BUSINESS DETAILS")
+
+    data = {
+        "business_name": "Bookio",
+        "business_email": "support@bookio.com",
+        "business_category": "education",
+        "operating_currency": "NGN",
+        "business_description": "Agriculture Educational Platform",
+        "business_phone": "+2348012345678",
+        "address_line1": "123 Farm Road",
+        "country": "Nigeria",
+        "state": "Lagos"
+    }
+
+    print("\n📤 Submitting business details...")
+    print(json.dumps(data, indent=2))
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.post(
+        f"{BASE_URL}/onboarding/step1/business-details",
+        params={"merchant_id": merchant_id},
+        json=data,
+        headers=headers
+    )
+
+    if response.status_code == 200:
+        result = response.json()
+        print(f"\n✅ {result['message']}")
+        print(f"   Steps completed: {result['onboarding']['steps_completed']}/4")
+        print(f"   Progress: {result['onboarding']['completion_percentage']}%")
+        return True
+    else:
+        print(f"\n❌ Failed: {response.text}")
+        return False
+
+
+def complete_step2_whatsapp():
+    print_step(2, "WHATSAPP CONNECTION")
+
+    data = {
+        "app_id": "sayar-merchant-12345",
+        "app_secret": "EAAwG...YourSecretToken...L4xZ",
+        "business_account_id": "123456789012345",
+        "phone_number_id": "987654321098765",
+        "whatsapp_phone_number": "+2348012345678",
+        "access_token": "EAAwG...YourAccessToken...xYz"
+    }
+
+    print("\n📤 Submitting WhatsApp configuration...")
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.post(
+        f"{BASE_URL}/onboarding/step2/whatsapp-connection",
+        params={"merchant_id": merchant_id},
+        json=data,
+        headers=headers
+    )
+
+    if response.status_code == 200:
+        result = response.json()
+        print(f"\n✅ {result['message']}")
+
+        print("\n🔄 Testing WhatsApp connection...")
+        test_response = requests.post(
+            f"{BASE_URL}/onboarding/step2/test-connection",
+            params={"merchant_id": merchant_id},
+            headers=headers
+        )
+
+        if test_response.status_code == 200:
+            test_result = test_response.json()
+            print(f"   {test_result['message']}")
+
+        return True
+    else:
+        print(f"\n❌ Failed: {response.text}")
+        return False
+
+
+def complete_step3_catalog():
+    print_step(3, "META CATALOG ID")
+
+    print("\nOptions:")
+    print("1. Configure catalog")
+    print("2. Skip this step")
+
+    choice = input("\nEnter choice (1/2): ").strip()
 
     headers = {"Authorization": f"Bearer {access_token}"}
 
-    # Check initial onboarding status
-    print("\n📊 Checking Initial Onboarding Status")
-    print("-" * 70)
+    if choice == "2":
+        print("\n⏭️  Skipping catalog configuration...")
+        response = requests.post(
+            f"{BASE_URL}/onboarding/step3/skip",
+            params={"merchant_id": merchant_id},
+            headers=headers
+        )
+    else:
+        data = {
+            "catalog_id": "1234567890",
+            "product_feed_url": "https://example.com/sayar/"
+        }
 
-    response = requests.get(f"{API_BASE}/onboarding/status", headers=headers)
+        print("\n📤 Submitting catalog configuration...")
+        response = requests.post(
+            f"{BASE_URL}/onboarding/step3/catalog-connection",
+            params={"merchant_id": merchant_id},
+            json=data,
+            headers=headers
+        )
+
+        if response.status_code == 200:
+            print("\n🔄 Testing catalog connection...")
+            test_response = requests.post(
+                f"{BASE_URL}/onboarding/step3/test-connection",
+                params={"merchant_id": merchant_id},
+                headers=headers
+            )
+
+            if test_response.status_code == 200:
+                test_result = test_response.json()
+                print(f"   {test_result['message']}")
+                print(f"   Feed Status: {test_result.get('feed_status', 'N/A')}")
 
     if response.status_code == 200:
-        status = response.json()
-        print(f"✅ Onboarding Status Retrieved")
-        print(f"   Progress: {status['steps_completed']}/{status['total_steps']} ({status['completion_percentage']}%)")
-        print(f"   Current Step: {status['current_step']}")
+        result = response.json()
+        print(f"\n✅ {result['message']}")
+        return True
     else:
-        print(f"❌ Failed: {response.text}")
+        print(f"\n❌ Failed: {response.text}")
+        return False
 
-    # Step 1: Business Details
-    print("\n📝 Step 1: Business Details")
-    print("-" * 70)
 
-    business_details = {
-        "business_name": "Sayar Retail Solutions",
-        "business_email": "info@sayarretail.com",
-        "business_logo_url": "https://cloudinary.com/logo.png",
-        "business_category": "retail",
-        "operating_currency": "NGN",
-        "business_description": "We provide innovative retail solutions for modern businesses",
-        "business_phone": "+2348012345678",
-        "address_line1": "123 Commerce Street",
-        "address_line2": "Floor 5, Suite 501",
-        "country": "Nigeria",
-        "state": "Lagos",
-        "city": "Ikeja",
-        "postal_code": "100001",
-        "website": "https://sayarretail.com"
+def complete_step4_payment():
+    print_step(4, "PAYMENT DETAILS")
+
+    data = {
+        "bank_name": "Access Bank",
+        "account_number": "0123456789"
     }
 
+    print("\n📤 Submitting payment details...")
+    print(json.dumps(data, indent=2))
+
+    headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.post(
-        f"{API_BASE}/onboarding/business-details",
-        json=business_details,
+        f"{BASE_URL}/onboarding/step4/payment-details",
+        params={"merchant_id": merchant_id},
+        json=data,
         headers=headers
     )
 
     if response.status_code == 200:
         result = response.json()
-        print(f"✅ {result['message']}")
-        print(f"   Next Step: {result['next_step']}")
-        print(
-            f"   Progress: {result['onboarding_progress']['steps_completed']}/{result['onboarding_progress']['total_steps']}")
+        print(f"\n✅ {result['message']}")
+
+        if result['onboarding']['is_completed']:
+            print("\n🎉🎉🎉 ONBOARDING COMPLETED! 🎉🎉🎉")
+            print(f"   All {result['onboarding']['total_steps']} steps completed!")
+
+        return True
     else:
-        print(f"❌ Failed: {response.text}")
-        return
-
-    # # Step 2: WhatsApp Connection
-    # print("\n📱 Step 2: WhatsApp Connection")
-    # print("-" * 70)
-    #
-    # whatsapp_data = {
-    #     "whatsapp_number": "+2348012345678",
-    #     "whatsapp_business_id": "1234567890",
-    #     "verification_code": "123456"
-    # }
-    #
-    # response = requests.post(
-    #     f"{API_BASE}/onboarding/whatsapp-connection",
-    #     json=whatsapp_data,
-    #     headers=headers
-    # )
-    #
-    # if response.status_code == 200:
-    #     result = response.json()
-    #     print(f"✅ {result['message']}")
-    #     print(f"   Next Step: {result['next_step']}")
-    #     print(
-    #         f"   Progress: {result['onboarding_progress']['steps_completed']}/{result['onboarding_progress']['total_steps']}")
-    # else:
-    #     print(f"❌ Failed: {response.text}")
-
-    # # Step 3: Catalog ID
-    # print("\n📦 Step 3: Catalog ID")
-    # print("-" * 70)
-    #
-    # catalog_data = {
-    #     "catalog_id": "CAT-2024-001",
-    #     "catalog_name": "Main Product Catalog"
-    # }
-    #
-    # response = requests.post(
-    #     f"{API_BASE}/onboarding/catalog-id",
-    #     json=catalog_data,
-    #     headers=headers
-    # )
-    #
-    # if response.status_code == 200:
-    #     result = response.json()
-    #     print(f"✅ {result['message']}")
-    #     print(f"   Next Step: {result['next_step']}")
-    #     print(
-    #         f"   Progress: {result['onboarding_progress']['steps_completed']}/{result['onboarding_progress']['total_steps']}")
-    # else:
-    #     print(f"❌ Failed: {response.text}")
-
-    # # Step 4: Payment Details
-    # print("\n💳 Step 4: Payment Details")
-    # print("-" * 70)
-    #
-    # payment_data = {
-    #     "bank_name": "First Bank of Nigeria",
-    #     "account_number": "1234567890",
-    #     "account_name": "Sayar Retail Solutions",
-    #     "bank_code": "011",
-    #     "tax_id": "12345678-0001"
-    # }
-    #
-    # response = requests.post(
-    #     f"{API_BASE}/onboarding/payment-details",
-    #     json=payment_data,
-    #     headers=headers
-    # )
-    #
-    # if response.status_code == 200:
-    #     result = response.json()
-    #     print(f"✅ {result['message']}")
-    #     print(f"   Onboarding Completed: {result['onboarding_progress']['is_completed']}")
-    #     print(
-    #         f"   Progress: {result['onboarding_progress']['steps_completed']}/{result['onboarding_progress']['total_steps']}")
-    # else:
-    #     print(f"❌ Failed: {response.text}")
-    #
-    # # Final Status Check
-    # print("\n📊 Final Onboarding Status")
-    # print("-" * 70)
-    #
-    # response = requests.get(f"{API_BASE}/onboarding/status", headers=headers)
-    #
-    # if response.status_code == 200:
-    #     status = response.json()
-    #     print(f"✅ Onboarding Complete!")
-    #     print(f"   Progress: {status['completion_percentage']}%")
-    #     print(f"   All Steps:")
-    #     print(f"      1. Business Details: {status['business_details_status']}")
-    #     print(f"      2. WhatsApp Connection: {status['whatsapp_connection_status']}")
-    #     print(f"      3. Catalog ID: {status['catalog_id_status']}")
-    #     print(f"      4. Payment Details: {status['payment_details_status']}")
-    # else:
-    #     print(f"❌ Failed: {response.text}")
-    #
-    # print("\n" + "=" * 70)
-    # print("✅ ONBOARDING TEST COMPLETE!")
-    # print("=" * 70)
+        print(f"\n❌ Failed: {response.text}")
+        return False
 
 
-def test_skip_step():
-    """Test skipping optional steps"""
-    print("\n" + "=" * 70)
-    print("TEST: SKIPPING OPTIONAL STEPS")
+def main():
+    print("\n🚀 SAYAR MERCHANT ONBOARDING TEST")
     print("=" * 70)
 
-    # Login first
-    login_data = {
-        "email": "john@example.com",
-        "password": "SecurePass123"
-    }
+    if not test_signup_and_login():
+        print("\n❌ Authentication failed. Exiting.")
+        return
 
-    response = requests.post(f"{API_BASE}/auth/login", json=login_data)
-    token_data = response.json()
-    headers = {"Authorization": f"Bearer {token_data['access_token']}"}
+    input("\nPress Enter to continue...")
 
-    # Try skipping WhatsApp Connection
-    print("\n⏭️  Attempting to skip WhatsApp Connection...")
+    get_onboarding_progress()
+    input("\nPress Enter to start onboarding...")
 
-    response = requests.post(
-        f"{API_BASE}/onboarding/skip/whatsapp_connection",
-        headers=headers
-    )
+    # Step 1: Business Details
+    if complete_step1_business_details():
+        get_onboarding_progress()
+        input("\nPress Enter to continue...")
 
-    if response.status_code == 200:
-        result = response.json()
-        print(f"✅ {result['message']}")
-        print(f"   Next Step: {result['next_step']}")
-    else:
-        print(f"❌ Failed: {response.text}")
+    # Step 2: WhatsApp
+    if complete_step2_whatsapp():
+        get_onboarding_progress()
+        input("\nPress Enter to continue...")
+
+    # Step 3: Catalog
+    if complete_step3_catalog():
+        get_onboarding_progress()
+        input("\nPress Enter to continue...")
+
+    # Step 4: Payment
+    if complete_step4_payment():
+        get_onboarding_progress()
+
+    print("\n" + "=" * 70)
+    print("✅ ONBOARDING TEST COMPLETE!")
+    print("=" * 70)
+    print("\n📚 Check the database to see all the onboarding records.")
+    print("🌐 Visit http://127.0.0.1:8000/api/v1/docs for API documentation.")
 
 
 if __name__ == "__main__":
-    print("\n🚀 Starting Sayar Onboarding Tests...\n")
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n👋 Test interrupted. Goodbye!")
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        import traceback
 
-    print("Choose test to run:")
-    print("1. Complete onboarding flow")
-    print("2. Test skip functionality")
-    print("3. Both")
-
-    choice = input("\nEnter choice (1-3): ").strip()
-
-    if choice == "1":
-        test_complete_onboarding_flow()
-    elif choice == "2":
-        test_skip_step()
-    elif choice == "3":
-        test_complete_onboarding_flow()
-        test_skip_step()
-    else:
-        print("Invalid choice")
-
-    print("\n📚 Visit http://127.0.0.1:8000/api/v1/docs for interactive API documentation\n")
+        traceback.print_exc()
