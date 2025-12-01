@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from app.models.user import UserRole
 
@@ -76,3 +76,22 @@ class UserResponse(BaseModel):
                 "created_at": "2024-01-01T00:00:00"
             }
         }
+
+    class UserWithMerchantsResponse(BaseModel):
+        id: UUID
+        email: EmailStr
+        first_name: str
+        last_name: str
+        phone: str
+        role: UserRole
+        is_active: bool
+        is_verified: bool
+        avatar_url: Optional[str] = None
+        created_at: datetime
+        agreed_to_terms: bool
+        send_marketing_emails: bool
+
+        merchants: List[dict] = []
+
+        class Config:
+            from_attributes = True

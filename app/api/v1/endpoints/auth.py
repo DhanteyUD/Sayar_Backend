@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from app.core.database import get_db
 from app.schemas.auth import (
@@ -86,14 +87,49 @@ def login(
     return TokenResponse(**tokens)
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=dict)
 def get_current_user_info(
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
 ):
     """
-    Get current user information
+    Get current user information with associated merchants
     """
-    return UserResponse.model_validate(current_user)
+    from app.services.merchant_service import MerchantService
+
+    user_id = UUID(str(current_user.id))
+
+    merchants_data = []
+    if current_user.role in ["merchant", "admin"]:
+        user_merchants = MerchantService.get_user_merchants(db, user_id)
+
+        for merchant, merchant_user in user_merchants:
+            merchants_data.append({
+                "merchant_id": str(merchant.id),
+                "business_name": merchant.business_name,
+                "business_email": merchant.business_email,
+                "business_logo_url": merchant.business_logo_url,
+                "role": merchant_user.role.value,
+                "status": merchant_user.status.value,
+                "is_active": merchant.is_active,
+                "is_verified": merchant.is_verified
+            })
+
+    return {
+        "id": str(current_user.id),
+        "email": current_user.email,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "phone": current_user.phone,
+        "role": current_user.role.value,
+        "is_active": current_user.is_active,
+        "is_verified": current_user.is_verified,
+        "avatar_url": current_user.avatar_url,
+        "created_at": current_user.created_at.isoformat(),
+        "agreed_to_terms": current_user.agreed_to_terms,
+        "send_marketing_emails": current_user.send_marketing_emails,
+        "merchants": merchants_data
+    }
 
 
 @router.post("/verify-email/{token}", response_model=dict)
@@ -139,7 +175,6 @@ def confirm_password_reset(
         reset_data: PasswordResetConfirm,
         db: Session = Depends(get_db)
 ):
-
     """
     Confirm password reset with token and new password
     """
