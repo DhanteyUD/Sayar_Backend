@@ -38,7 +38,7 @@ class OnboardingService:
             onboarding = MerchantOnboarding(
                 merchant_id=merchant_id,
                 user_id=user_id,
-                status=OnboardingStatus.IN_PROGRESS,
+                status=OnboardingStatus.IN_PROGRESS.value,
                 current_step=1,
                 created_at=datetime.now(timezone.utc),
                 updated_at=datetime.now(timezone.utc),
