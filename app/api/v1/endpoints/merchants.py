@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -62,7 +62,7 @@ def list_merchant_users(
 @router.get("/merchant-users/{user_id}", response_model=dict)
 def get_merchant_user(
         merchant_id: UUID = Query(..., description="Merchant ID"),
-        user_id: UUID = Query(..., description="User ID"),
+        user_id: UUID = Path(..., description="User ID"),
         current_user: User = Depends(get_current_merchant_user),
         db: Session = Depends(get_db)
 ):
