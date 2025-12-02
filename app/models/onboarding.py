@@ -52,25 +52,63 @@ class MerchantOnboarding(Base):
                                               index=True)
 
     # Overall Status
-    status = Column(SQLEnum(OnboardingStatus), default=OnboardingStatus.NOT_STARTED, nullable=False)
+    status = Column(
+        SQLEnum(
+            OnboardingStatus,
+            name="onboardingstatus",
+            values_callable=lambda obj: [e.value for e in obj]
+        ),
+        default=OnboardingStatus.NOT_STARTED,
+        nullable=False
+    )
     current_step = Column(Integer, default=1, nullable=False)  # 1-4
 
     # Step 1: Business Details
-    business_details_status = Column(SQLEnum(OnboardingStepStatus), default=OnboardingStepStatus.PENDING,
-                                     nullable=False)
+    business_details_status = Column(
+        SQLEnum(
+            OnboardingStepStatus,
+            name="onboardingstepstatus",
+            values_callable=lambda obj: [e.value for e in obj]
+        ),
+        default=OnboardingStepStatus.PENDING,
+        nullable=False
+    )
     business_details_completed_at = Column(DateTime, nullable=True)
 
     # Step 2: WhatsApp Connection
-    whatsapp_connection_status = Column(SQLEnum(OnboardingStepStatus), default=OnboardingStepStatus.PENDING,
-                                        nullable=False)
+    whatsapp_connection_status = Column(
+        SQLEnum(
+            OnboardingStepStatus,
+            name="onboardingstepstatus",
+            values_callable=lambda obj: [e.value for e in obj]
+        ),
+        default=OnboardingStepStatus.PENDING,
+        nullable=False
+    )
     whatsapp_connection_completed_at = Column(DateTime, nullable=True)
 
     # Step 3: Meta Catalog ID
-    catalog_id_status = Column(SQLEnum(OnboardingStepStatus), default=OnboardingStepStatus.PENDING, nullable=False)
+    catalog_id_status = Column(
+        SQLEnum(
+            OnboardingStepStatus,
+            name="onboardingstepstatus",
+            values_callable=lambda obj: [e.value for e in obj]
+        ),
+        default=OnboardingStepStatus.PENDING,
+        nullable=False
+    )
     catalog_id_completed_at = Column(DateTime, nullable=True)
 
     # Step 4: Payment Details
-    payment_details_status = Column(SQLEnum(OnboardingStepStatus), default=OnboardingStepStatus.PENDING, nullable=False)
+    payment_details_status = Column(
+        SQLEnum(
+            OnboardingStepStatus,
+            name="onboardingstepstatus",
+            values_callable=lambda obj: [e.value for e in obj]
+        ),
+        default=OnboardingStepStatus.PENDING,
+        nullable=False
+    )
     payment_details_completed_at = Column(DateTime, nullable=True)
 
     steps_completed = Column(Integer, default=0, nullable=False)

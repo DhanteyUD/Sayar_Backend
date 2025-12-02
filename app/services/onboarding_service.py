@@ -82,7 +82,7 @@ class OnboardingService:
         if not onboarding:
             raise ValueError("Onboarding record not found")
 
-        onboarding.business_details_status = OnboardingStatus.COMPLETED
+        onboarding.business_details_status = OnboardingStatus.COMPLETED.value
         onboarding.business_details_completed_at = datetime.now(timezone.utc)
         onboarding.steps_completed = OnboardingService._count_completed_steps(onboarding)
         onboarding.current_step = 2
@@ -149,7 +149,7 @@ class OnboardingService:
         if not onboarding:
             raise ValueError("Onboarding record not found")
 
-        onboarding.whatsapp_connection_status = OnboardingStepStatus.COMPLETED
+        onboarding.whatsapp_connection_status = OnboardingStepStatus.COMPLETED.value
         onboarding.whatsapp_connection_completed_at = datetime.now(timezone.utc)
         onboarding.steps_completed = OnboardingService._count_completed_steps(onboarding)
         onboarding.current_step = 3
@@ -218,7 +218,7 @@ class OnboardingService:
         if not onboarding:
             raise ValueError("Onboarding record not found")
 
-        onboarding.catalog_id_status = OnboardingStepStatus.COMPLETED
+        onboarding.catalog_id_status = OnboardingStepStatus.COMPLETED.value
         onboarding.catalog_id_completed_at = datetime.now(timezone.utc)
         onboarding.steps_completed = OnboardingService._count_completed_steps(onboarding)
         onboarding.current_step = 4
@@ -300,12 +300,12 @@ class OnboardingService:
         if not onboarding:
             raise ValueError("Onboarding record not found")
 
-        onboarding.payment_details_status = OnboardingStepStatus.COMPLETED
+        onboarding.payment_details_status = OnboardingStepStatus.COMPLETED.value
         onboarding.payment_details_completed_at = datetime.now(timezone.utc)
         onboarding.steps_completed = OnboardingService._count_completed_steps(onboarding)
 
         if onboarding.steps_completed == onboarding.total_steps:
-            onboarding.status = OnboardingStatus.COMPLETED
+            onboarding.status = OnboardingStatus.COMPLETED.value
             onboarding.is_completed = True
             onboarding.completed_at = datetime.now(timezone.utc)
 
@@ -427,13 +427,13 @@ class OnboardingService:
     @staticmethod
     def _count_completed_steps(onboarding: MerchantOnboarding) -> int:
         count = 0
-        if onboarding.business_details_status == OnboardingStepStatus.COMPLETED:
+        if onboarding.business_details_status == OnboardingStepStatus.COMPLETED.value:
             count += 1
-        if onboarding.whatsapp_connection_status == OnboardingStepStatus.COMPLETED:
+        if onboarding.whatsapp_connection_status == OnboardingStepStatus.COMPLETED.value:
             count += 1
-        if onboarding.catalog_id_status == OnboardingStepStatus.COMPLETED:
+        if onboarding.catalog_id_status == OnboardingStepStatus.COMPLETED.value:
             count += 1
-        if onboarding.payment_details_status == OnboardingStepStatus.COMPLETED:
+        if onboarding.payment_details_status == OnboardingStepStatus.COMPLETED.value:
             count += 1
         return count
 
@@ -451,7 +451,7 @@ class OnboardingService:
             raise ValueError("Onboarding record not found")
 
         if step_name == "catalog_id":
-            onboarding.catalog_id_status = OnboardingStepStatus.SKIPPED
+            onboarding.catalog_id_status = OnboardingStepStatus.SKIPPED.value
             onboarding.current_step = 4
 
         onboarding.updated_at = datetime.now(timezone.utc)
